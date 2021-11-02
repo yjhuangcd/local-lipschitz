@@ -125,14 +125,14 @@ def argparser(data='cifar10', model='c6f2_relux',
     if args.starting_epsilon is None:
         args.starting_epsilon = args.epsilon
     if args.prefix:
-        args.prefix = '/cnnfresults/tight_local_models/'+args.data+'/'+args.prefix
+        args.prefix = 'pretrained/'+args.prefix
         if args.model is not None: 
             args.prefix += '_'+args.model
         if args.schedule_length > args.epochs: 
             raise ValueError('Schedule length for epsilon ({}) is greater than '
                              'number of epochs ({})'.format(args.schedule_length, args.epochs))
     else: 
-        args.prefix = 'models/'+args.data+'/temporary'
+        args.prefix = 'pretrained/temporary'
 
     if args.cuda_ids is not None: 
         print('Setting CUDA_VISIBLE_DEVICES to {}'.format(args.cuda_ids))

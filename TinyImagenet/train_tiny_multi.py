@@ -21,8 +21,6 @@ from apex.parallel import DistributedDataParallel
 import torch.distributed as dist
 import torch.utils.data.distributed
 
-import wandb
-
 if __name__ == "__main__":
     args = utils.argparser()
     print(datetime.now())
@@ -59,9 +57,7 @@ if __name__ == "__main__":
     utils.seed_torch(args.seed)
 
     train_loader, test_loader = data_load.data_loaders(args.data, args.batch_size, args.test_batch_size, augmentation=args.augmentation, normalization=args.normalization, drop_last=args.drop_last, shuffle=args.shuffle)
-    
-    wandb.init(project=args.project, config=args) 
-    
+        
     best_err = 1
     err = 1
     model = utils.select_model(args.data, args.model, args.init)
@@ -155,11 +151,7 @@ if __name__ == "__main__":
             print('Taken', time.time()-st, 's/epoch')
             
             u_test, err, robust_losses_test, losses_test, errors_test, sparse_loss_test = Local.evaluate(test_loader, model, epsilon_next, t, test_log, args.verbose, args, u_list, u_test, global_rank)
-            
             torch.cuda.empty_cache()
-
-            if device_count == 1 or global_rank == 0:           
-                wandb.log({"train_bcp_loss": robust_losses_train, "train_sparse_loss": sparse_loss_train, "train_bcp_err": robust_errors_train, "train_ce": losses_train, "train_err": errors_train, "test_bcp_loss": robust_losses_test, "test_bcp_err": err, "test_ce": losses_test, "test_err": errors_test, "test_sparse_loss": sparse_loss_test})
                        
         if args.lr_scheduler == 'step': 
             if max(t - (args.rampup + args.warmup - 1) + 1, 0):
@@ -205,5 +197,3 @@ if __name__ == "__main__":
     print('verification testing ...')
     u_test, last_err, robust_losses_test, losses_test, errors_test, sparse_loss_test = Local.evaluate(test_loader, model_eval, args.epsilon, t, test_log, args.verbose, args, u_list, u_test, global_rank)  
     print('Best model evaluation:', std_err, pgd_err, last_err)
-    
-    wandb.log({"best_clean_err": std_err, "best_pgd_err": pgd_err, "best_robust_error": last_err})

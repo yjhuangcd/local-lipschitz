@@ -40,8 +40,8 @@ def data_loaders(data, batch_size, test_batch_size, augmentation=False, normaliz
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize((0.485, 0.456, 0.406), (0.225, 0.225, 0.225))])
-            trainset = datasets.CIFAR10(root='/workspace/', train=True, download=True, transform=trainset_transforms)
-            testset = datasets.CIFAR10(root='/workspace/', train=False, download=True, transform=transforms.Compose([
+            trainset = datasets.CIFAR10(root='data/', train=True, download=True, transform=trainset_transforms)
+            testset = datasets.CIFAR10(root='data/', train=False, download=True, transform=transforms.Compose([
                 transforms.ToTensor(),
                 transforms.Normalize((0.485, 0.456, 0.406), (0.225, 0.225, 0.225))]))
             
@@ -50,17 +50,17 @@ def data_loaders(data, batch_size, test_batch_size, augmentation=False, normaliz
                 transforms.RandomCrop(32, padding=4),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()])
-            trainset = datasets.CIFAR10(root='/workspace/', train=True, download=True, transform=trainset_transforms)
-            testset = datasets.CIFAR10(root='/workspace/', train=False, download=True, transform=transforms.Compose([
+            trainset = datasets.CIFAR10(root='data/', train=True, download=True, transform=trainset_transforms)
+            testset = datasets.CIFAR10(root='data/', train=False, download=True, transform=transforms.Compose([
                 transforms.ToTensor()]))
             
         else:
-            trainset = datasets.CIFAR10(root='/workspace/', train=True, download=True, transform=transforms.ToTensor())
-            testset = datasets.CIFAR10(root='/workspace/', train=False, download=True, transform=transforms.ToTensor())
+            trainset = datasets.CIFAR10(root='data/', train=True, download=True, transform=transforms.ToTensor())
+            testset = datasets.CIFAR10(root='data/', train=False, download=True, transform=transforms.ToTensor())
 
     if data == 'mnist':
-        trainset = datasets.MNIST(root='/workspace/', train=True, download=True, transform=transforms.ToTensor())
-        testset = datasets.MNIST(root='/workspace/', train=False, download=True, transform=transforms.ToTensor())
+        trainset = datasets.MNIST(root='data/', train=True, download=True, transform=transforms.ToTensor())
+        testset = datasets.MNIST(root='data/', train=False, download=True, transform=transforms.ToTensor())
     
     if data == 'tinyimagenet':
         if augmentation and normalization:
@@ -69,8 +69,8 @@ def data_loaders(data, batch_size, test_batch_size, augmentation=False, normaliz
                     transforms.RandomHorizontalFlip(),
                     transforms.ToTensor(),
                     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])])
-            trainset = datasets.ImageFolder(root='/workspace/tiny-imagenet-200/train', transform=trainset_transforms)
-            testset = datasets.ImageFolder(root='/workspace/tiny-imagenet-200/val', transform=transforms.Compose([
+            trainset = datasets.ImageFolder(root='data/tiny-imagenet-200/train', transform=trainset_transforms)
+            testset = datasets.ImageFolder(root='data/tiny-imagenet-200/val', transform=transforms.Compose([
                     transforms.ToTensor(),
                     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])]))
             
@@ -81,8 +81,8 @@ def data_loaders(data, batch_size, test_batch_size, augmentation=False, normaliz
                     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])])
             testset_transforms = transforms.Compose([
                     transforms.ToTensor()])
-            trainset = datasets.ImageFolder(root='/workspace/tiny-imagenet-200/train', transform=trainset_transforms)
-            testset = datasets.ImageFolder(root='/workspace/tiny-imagenet-200/val', transform=testset_transforms)
+            trainset = datasets.ImageFolder(root='data/tiny-imagenet-200/train', transform=trainset_transforms)
+            testset = datasets.ImageFolder(root='data/tiny-imagenet-200/val', transform=testset_transforms)
             
         elif augmentation and not normalization:
             trainset_transforms = transforms.Compose([
@@ -91,8 +91,8 @@ def data_loaders(data, batch_size, test_batch_size, augmentation=False, normaliz
                     transforms.ToTensor()])
             testset_transforms = transforms.Compose([
                     transforms.ToTensor()])
-            trainset = datasets.ImageFolder(root='/workspace/tiny-imagenet-200/train', transform=trainset_transforms)
-            testset = datasets.ImageFolder(root='/workspace/tiny-imagenet-200/val', transform=testset_transforms)
+            trainset = datasets.ImageFolder(root='data/tiny-imagenet-200/train', transform=trainset_transforms)
+            testset = datasets.ImageFolder(root='data/tiny-imagenet-200/val', transform=testset_transforms)
             
         elif not augmentation and not normalization:
             trainset_transforms = transforms.Compose([
@@ -100,8 +100,8 @@ def data_loaders(data, batch_size, test_batch_size, augmentation=False, normaliz
                     transforms.ToTensor()])
             testset_transforms = transforms.Compose([
                     transforms.ToTensor()])
-            trainset = datasets.ImageFolder(root='/workspace/tiny-imagenet-200/train', transform=trainset_transforms)
-            testset = datasets.ImageFolder(root='/workspace/tiny-imagenet-200/val', transform=testset_transforms)
+            trainset = datasets.ImageFolder(root='data/tiny-imagenet-200/train', transform=trainset_transforms)
+            testset = datasets.ImageFolder(root='data/tiny-imagenet-200/val', transform=testset_transforms)
 
     ##### Distributed Training #####
     train_sampler = None

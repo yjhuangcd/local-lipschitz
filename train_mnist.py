@@ -14,8 +14,6 @@ import data_load
 import utils
 import Local_bound as Local
 
-# import wandb
-
 if __name__ == "__main__":
     args = utils.argparser(data='mnist',epochs=300,warmup=0,rampup=150,batch_size=256,epsilon=1.58,epsilon_train=1.58)    
     print(datetime.now())
@@ -27,9 +25,7 @@ if __name__ == "__main__":
     train_loader, test_loader = data_load.data_loaders(args.data, args.batch_size, args.test_batch_size, augmentation=args.augmentation, normalization=args.normalization, drop_last=args.drop_last, shuffle=args.shuffle)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
-    
-#     wandb.init(project=args.project, config=args) 
-    
+        
     best_err = 1
     err = 1
     model = utils.select_model(args.data, args.model, args.init)
@@ -56,7 +52,6 @@ if __name__ == "__main__":
             u_train.append(None)
             u_test.append(None)
         
-    print(model)    
     if args.opt == 'adam': 
         opt = optim.Adam(model.parameters(), lr=args.lr)
     elif args.opt == 'sgd': 
@@ -113,9 +108,7 @@ if __name__ == "__main__":
             print('Taken', time.time()-st, 's/epoch')
             
             u_test, err, robust_losses_test, losses_test, errors_test = Local.evaluate(test_loader, model, epsilon_next, t, test_log, args.verbose, args, u_list, u_test)
-            
-#             wandb.log({"train_local_loss": robust_losses_train, "train_local_err": robust_errors_train, "train_ce": losses_train, "train_err": errors_train, "test_local_loss": robust_losses_test, "test_local_err": err, "test_ce": losses_test, "test_err": errors_test})
-                       
+                                   
         if args.lr_scheduler == 'step': 
             if max(t - (args.rampup + args.warmup - 1) + 1, 0):
                 print("LR DECAY STEP")
@@ -155,5 +148,3 @@ if __name__ == "__main__":
     print('verification testing ...')
     u_test, last_err, robust_losses_test, losses_test, errors_test = Local.evaluate(test_loader, model_eval, args.epsilon, t, test_log, args.verbose, args, u_list, u_test)  
     print('Best model evaluation:', std_err.item(), pgd_err.item(), last_err.item())
-    
-#     wandb.log({"best_clean_err": std_err.item(), "best_pgd_err": pgd_err.item(), "best_robust_error": last_err.item()})
