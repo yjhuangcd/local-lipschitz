@@ -125,6 +125,8 @@ def select_model(data, m, init):
     if data=='mnist':
         if m=='relux':
             model = mnist_model_large_relux().cuda()
+        elif m=='standrelu':
+            model = mnist_model_large_standrelu().cuda()
     elif data=='cifar10':
         if m=='relux':
             model = cifar_model_large_relux().cuda()
@@ -132,6 +134,8 @@ def select_model(data, m, init):
             model = c6f2_relux(init=init).cuda()
         elif m=='c6f2_clmaxmin':
             model = c6f2_clmaxmin().cuda()
+        elif m=='standrelu':
+            model = c6f2_standrelu().cuda()
     elif data=='tinyimagenet':
         if m == 'tinyimagenet_relux':
             model = tinyimagenet_relux(init=init).cuda()
@@ -152,6 +156,30 @@ def mnist_model_large_relux():
         ReLU_x(torch.Size([1, 512])),
         nn.Linear(512,512),
         ReLU_x(torch.Size([1, 512])),
+        nn.Linear(512,10)
+    )
+    for m in model.modules():
+        if isinstance(m, nn.Conv2d):
+            n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+            m.weight.data.normal_(0, math.sqrt(2. / n))
+            m.bias.data.zero_()
+    return model
+
+def mnist_model_large_standrelu(): 
+    model = nn.Sequential(
+        nn.Conv2d(1, 32, 3, stride=1, padding=1),
+        nn.ReLU(),
+        nn.Conv2d(32, 32, 4, stride=2, padding=1),
+        nn.ReLU(),
+        nn.Conv2d(32, 64, 3, stride=1, padding=1),
+        nn.ReLU(),
+        nn.Conv2d(64, 64, 4, stride=2, padding=1),
+        nn.ReLU(),
+        Flatten(),
+        nn.Linear(64*7*7,512),
+        nn.ReLU(),
+        nn.Linear(512,512),
+        nn.ReLU(),
         nn.Linear(512,10)
     )
     for m in model.modules():
@@ -202,6 +230,32 @@ def c6f2_relux(init=2.0):
         Flatten(),
         nn.Linear(4096,512),
         ReLU_x(torch.Size([1, 512]), init),
+        nn.Linear(512,10)
+    )
+    for m in model.modules():
+        if isinstance(m, nn.Conv2d):
+            n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+            m.weight.data.normal_(0, math.sqrt(2. / n))
+            m.bias.data.zero_()
+    return model
+
+def c6f2_standrelu(): 
+    model = nn.Sequential(
+        nn.Conv2d(3, 32, 3, stride=1, padding=1),
+        nn.ReLU(),
+        nn.Conv2d(32, 32, 3, stride=1, padding=1),
+        nn.ReLU(),
+        nn.Conv2d(32, 32, 4, stride=2, padding=1),
+        nn.ReLU(),
+        nn.Conv2d(32, 64, 3, stride=1, padding=1),
+        nn.ReLU(),
+        nn.Conv2d(64, 64, 3, stride=1, padding=1),
+        nn.ReLU(),
+        nn.Conv2d(64, 64, 4, stride=2, padding=1),
+        nn.ReLU(),
+        Flatten(),
+        nn.Linear(4096,512),
+        nn.ReLU(),
         nn.Linear(512,10)
     )
     for m in model.modules():

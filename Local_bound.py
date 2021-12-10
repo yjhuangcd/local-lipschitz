@@ -250,16 +250,25 @@ class net_Local_Lip(nn.Module):
             # Box constrained propagation
             if isinstance(layer, nn.Conv2d):
                 mu, r, ibp_mu, ibp_r = self.bcp_conv2d(layer, mu, r, ibp_mu, ibp_r, i)
+                # relux: clipped relu with individual learnable threshold
                 if 'relux' in args.model:
-                    self.bcp_mask(ibp_mu, ibp_r, i, self.model[i+1])                
+                    self.bcp_mask(ibp_mu, ibp_r, i, self.model[i+1])   
+                # standrelu: standard relu
+                elif 'standrelu' in args.model:           
+                    self.bcp_mask_standrelu(ibp_mu, ibp_r, i)     
             elif isinstance(layer, nn.Linear):
                 mu, r, ibp_mu, ibp_r = self.bcp_linear(layer, mu, r, ibp_mu, ibp_r, i)
                 if 'relux' in args.model:
                     self.bcp_mask(ibp_mu, ibp_r, i, self.model[i+1])
+                elif 'standrelu' in args.model:           
+                    self.bcp_mask_standrelu(ibp_mu, ibp_r, i) 
             elif layer.__class__.__name__=='ReLU_x':
                 # save the mask for conv or linear layer before relu
                 self.Dn_mask[i] = self.Dn_mask[i-1]
                 mu, r, ibp_mu, ibp_r = self.bcp_relu(layer, mu, r, ibp_mu, ibp_r, i)
+            elif isinstance(layer, nn.ReLU):
+                self.Dn_mask[i] = self.Dn_mask[i-1]
+                mu, r, ibp_mu, ibp_r = self.bcp_standrelu(layer, mu, r, ibp_mu, ibp_r, i)                
             elif layer.__class__.__name__=='ClampGroupSort':
                 mu, r, ibp_mu, ibp_r = self.bcp_maxmin(layer, mu, r, ibp_mu, ibp_r, i)
                 self.bcp_mask_maxmin(ibp_mu, ibp_r, i, layer)
@@ -281,7 +290,7 @@ class net_Local_Lip(nn.Module):
         # compute local Lipschitz bound until the penultimate layer
         for i in range(depth-1):
             # pass for relu or flatten layer
-            if not self.model[i].__class__.__name__=='ReLU_x' and not self.model[i].__class__.__name__=='ClampGroupSort' and not self.model[i].__class__.__name__=='Flatten':
+            if not self.model[i].__class__.__name__=='ReLU_x' and not self.model[i].__class__.__name__=='ClampGroupSort' and not self.model[i].__class__.__name__=='Flatten' and not isinstance(self.model[i], nn.ReLU):
                 layer = self.model[i]
                 W = layer.weight
                 if len(self.u_data) > 0:
@@ -376,6 +385,19 @@ class net_Local_Lip(nn.Module):
         D0_mask[ibp_ub <= 0] = 1.0
         # Dn_msak: indicator for varying outputs
         Dn_mask -= (D1_mask + D0_mask)
+        self.Dn_mask[i] = Dn_mask
+        return
+
+    def bcp_mask_standrelu(self, ibp_mu, ibp_r, i):
+        D0_mask = torch.zeros_like(ibp_mu)
+        Dn_mask = torch.ones_like(ibp_mu)
+        ibp_lb = ibp_mu - ibp_r
+        ibp_ub = ibp_mu + ibp_r
+        
+        # D0_msak: indicator for upper bound smaller than zero
+        D0_mask[ibp_ub <= 0] = 1.0
+        # Dn_msak: indicator for varying outputs
+        Dn_mask -= D0_mask
         self.Dn_mask[i] = Dn_mask
         return
         
@@ -485,6 +507,33 @@ class net_Local_Lip(nn.Module):
         ibp_r = (ibp_ub-ibp_lb)/2
         
         mu = self._relu_x(mu, threshold)        
+        r = r
+        self.u_list[i] = 1
+        return mu, r, ibp_mu, ibp_r
+
+    def bcp_standrelu(self, layer, mu, r, ibp_mu, ibp_r, i):  
+        ibp_ub = ibp_mu+ibp_r
+        ibp_lb = ibp_mu-ibp_r
+        ibp_ub = self._relu(ibp_ub)
+        ibp_lb = self._relu(ibp_lb)
+        ibp_mu = (ibp_ub+ibp_lb)/2
+        ibp_r = (ibp_ub-ibp_lb)/2
+
+        mu_size = []
+        for j in range(len(mu.size())):
+            if j<1:
+                continue
+            mu_size.append(1)        
+
+        ibp_ub1 = self._relu(mu+r.view(-1,*mu_size))
+        ibp_lb1 = self._relu(mu-r.view(-1,*mu_size))
+        ibp_ub = torch.min(ibp_ub, ibp_ub1)
+        ibp_lb = torch.max(ibp_lb, ibp_lb1)
+        ibp_mu = (ibp_ub+ibp_lb)/2
+        ibp_r = (ibp_ub-ibp_lb)/2
+            
+        
+        mu = self._relu(mu)        
         r = r
         self.u_list[i] = 1
         return mu, r, ibp_mu, ibp_r

@@ -48,7 +48,7 @@ if __name__ == "__main__":
     
     for i in range(len(input_size)):
         print(i)
-        if not model[i].__class__.__name__=='ReLU_x' and not model[i].__class__.__name__=='ClampGroupSort' and not model[i].__class__.__name__=='Flatten':
+        if not model[i].__class__.__name__=='ReLU_x' and not model[i].__class__.__name__=='ClampGroupSort' and not model[i].__class__.__name__=='Flatten' and not isinstance(model[i], nn.ReLU):
             u_train.append(torch.randn((len(train_loader.dataset), *(input_size[i])), pin_memory=True))
             u_test.append(torch.randn((len(test_loader.dataset), *(input_size[i])), pin_memory=True))
         else:
