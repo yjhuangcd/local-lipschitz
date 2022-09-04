@@ -25,7 +25,7 @@ The codes for training models on TinyImagenet are in the `TinyImagenet` folder. 
 ## Requirements
 The codes are tested under NVIDIA container image for PyTorch, [release 20.11](https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/rel_20-11.html#rel_20-11).
 
-*   torch==3.6
+*   python==3.6
 *   torch==1.8.0
 *   torchvision==0.8.0
 *   advertorch==0.2.3
